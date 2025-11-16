@@ -29,7 +29,7 @@ export const SCENE_TAGS: string[] = [
 
 // 用於側邊欄導航的分類邏輯
 const DATA_VIZ_CATEGORIES = ['描述性統計', '資料匯入與清洗', '單變量繪圖', '雙變量繪圖', '多變量繪圖', '圖表美化與輸出', '動態與互動視覺化'];
-const STATS_MODEL_CATEGORIES = ['統計檢定', '迴歸分析', '時間序列分析', '非監督式學習', '進階統計模型', '程式碼除錯'];
+const STATS_MODEL_CATEGORIES = ['統計檢定', '迴歸分析', '時間序列分析', '非監督式學習', '進階統計模型', '程式碼除錯', '金融計算', '風險管理', '蒙地卡羅模擬'];
 export const CLINICAL_CATEGORIES = ['因果推論', '流行病學模型', '臨床影像分析', '離散選擇實驗 (DCE)', '統計檢定'];
 
 // 側邊欄導航項目
@@ -511,7 +511,7 @@ export const PROMPTS: Prompt[] = [
     uses: 480,
     likes: 230,
     description: '計算多個地理變數之間的 Spearman 等級相關係數，並使用 corrplot 套件繪製相關性矩陣圖。',
-    tags: ['R 語言', '相關性分析', 'corrplot', '地理數據', 'Spearman'],
+    tags: ['R 語言', '相關性分析', 'corrplot', '地理數據', 'Spearman', '多變量繪圖'],
     isFavorite: true,
     usageContext: '當您想探討多個地理變數（如海拔、氣溫、氣壓、降水）之間是否存在關聯，以及關聯性的強弱與方向時，相關性矩陣圖提供了清晰的全局視圖。',
     usageInstructions: '請準備一個包含您想分析的所有數值變數的資料框。程式碼將會計算所有變數配對的 Spearman 相關係數與 p-value，並視覺化呈現。',
@@ -1614,7 +1614,7 @@ export const PROMPTS: Prompt[] = [
     uses: 1420,
     likes: 810,
     description: '使用 tableone 套件，快速生成符合學術論文標準的「表一」，比較不同組別間的基線人口統計學與臨床特徵。',
-    tags: ['R 語言', 'tableone', 'Table 1', '基線特徵', '論文發表'],
+    tags: ['R 語言', 'tableone', 'Table 1', '基線特徵', '論文發表', '描述性統計'],
     isFavorite: true,
     essentialRank: 6,
     usageContext: '在任何臨床研究報告中，「表一」是呈現研究對象基本特徵、並比較實驗組與對照組是否均衡的標準表格。此指令能自動化這個繁瑣的過程，並自動計算 p-value 或標準化平均差異 (SMD)。',
@@ -2801,64 +2801,240 @@ export const PROMPTS: Prompt[] = [
 
 # 程式碼與結果要求
 - 請載入相關套件。
-- 程式碼需有清晰的中文註解。
-- 最終應生成一張清晰、資訊豐富的地圖。`
+- 程式碼需有清晰的中文註解，解釋每個繪圖步驟。
+- 最終圖表應清晰美觀，能有效傳達地理分佈資訊。
+\`\`\`R
+# 載入所需套件
+# 如果尚未安裝，請執行 install.packages(c("ggplot2", "sf", "rnaturalearth", "rnaturalearthdata"))
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# 1. 建立範例數據
+cities <- data.frame(
+  name = c("北京", "倫敦", "紐約", "東京", "開羅"),
+  lat = c(39.9042, 51.5074, 40.7128, 35.6895, 30.0444),
+  lon = c(116.4074, -0.1278, -74.0060, 139.6917, 31.2357),
+  pop = c(21540000, 8982000, 8399000, 13960000, 9539000)
+)
+
+# 2. 獲取地圖底圖
+# 使用 rnaturalearth 套件獲取世界地圖的 sf 物件
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# 3. 繪製地圖
+ggplot(data = world) +
+  # 繪製世界地圖的邊界和填充
+  geom_sf(fill = "antiquewhite", color = "gray60") +
+  # 將城市數據點疊加在地圖上
+  # aes() 中設定美學對應：x為經度，y為緯度，大小對應人口，顏色對應城市名
+  geom_point(data = cities, aes(x = lon, y = lat, size = pop, color = name), alpha = 0.8, stroke = 0) +
+  # 設定點大小的範圍與圖例標題
+  scale_size_continuous(range = c(3, 12), name = "人口數", labels = scales::comma) +
+  # 設定點的顏色方案與圖例標題
+  scale_color_viridis_d(name = "城市") +
+  # 設定地圖的座標參考系統與範圍
+  coord_sf(crs = "+proj=longlat +datum=WGS84", xlim = c(-160, 160), ylim = c(-55, 80), expand = FALSE) +
+  # 設定圖表主題與標題
+  labs(
+    title = "世界主要城市地理分佈",
+    subtitle = "點的大小代表城市人口",
+    x = "經度",
+    y = "緯度"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "aliceblue"),
+    panel.grid.major = element_line(color = "white", linetype = "dashed", size = 0.5),
+    legend.position = "right"
+  )
+\`\`\`
+`
   },
   {
     id: 87,
-    title: "階層式分群與樹狀圖視覺化 (hclust & dendrogram)",
-    difficulty: "3. 進階應用",
-    category: "非監督式學習",
-    uses: 350,
-    likes: 180,
-    description: "使用階層式分群法對樣本（如病患、基因）進行分群，並繪製樹狀圖 (Dendrogram) 來視覺化其群集結構與關係。",
-    tags: ['R 語言', '階層式分群', 'hclust', '樹狀圖', '非監督式學習', '熱力圖'],
+    title: '隱馬可夫模型 (HMM) 狀態解碼與序列分析',
+    difficulty: '3. 進階應用',
+    category: '進階統計模型',
+    uses: 110,
+    likes: 80,
+    description: '使用 `depmixS4` 套件擬合隱馬可夫模型，以從觀測序列中推斷潛在的狀態序列，常用於生態學、金融與生物資訊學。',
+    tags: ['R 語言', 'HMM', 'depmixS4', '隱馬可夫模型', '時間序列', '狀態推斷'],
     isFavorite: false,
     essentialRank: null,
-    usageContext: "當您想探索數據的內在群集結構，且不知道應該分成幾群時，階層式分群是比 K-Means 更具探索性的方法。它不需要預先指定群數，而是產生一個完整的層級結構，讓您可以根據樹狀圖來決定切割點。",
-    usageInstructions: "請準備一個只包含**數值變數**的資料框，並記得先進行**標準化 (`scale()`)**。程式碼將會先計算樣本間的距離矩陣 (`dist()`)，然後將此矩陣傳入 `hclust()` 函數進行分群。最後使用 `plot()` 函數將結果繪製成樹狀圖。",
-    fullPrompt: `我需要對一組觀測數據進行階層式分群，以探索其潛在的群體結構。
+    usageContext: '當您觀測到的時間序列數據（例如：動物移動模式、股價波動）被認為是由幾個潛在的、未被直接觀測到的「狀態」所驅動時，HMM 是一個強大的工具，可以幫助您推斷這些狀態的轉換過程。',
+    usageInstructions: '請安裝 `depmixS4` 套件。在 `depmix()` 函數中，`response` 參數定義了您的觀測變數模型，`nstates` 參數設定了您假設的潛在狀態數量。',
+    fullPrompt: `我正在分析一段時間序列數據，並懷疑其背後存在幾個未被直接觀測到的潛在狀態。
 
 # 我的背景資訊
-- **研究目的：** 根據美國各州的犯罪率數據，找出哪些州在犯罪模式上彼此相似。
-- **資料集：** 使用 R 內建的 \`USArrests\` 資料集。
-- **分析方法：** 階層式聚合分群 (Hierarchical Agglomerative Clustering)。
+- **研究目的：** 使用隱馬可夫模型 (HMM) 來識別一個生態系統觀測序列中的潛在狀態（例如，「枯水期」和「豐水期」），並找出最可能的狀態轉換序列。
+- **資料集：** 假設有一份包含每日河流流量 ('flow') 和降雨量 ('rain') 的時間序列資料。
+- **分析工具：** 我希望使用 R 語言的 \`depmixS4\` 套件。
 
 # 我的任務
-請提供 R 程式碼，完成以下分析流程：
-1.  **資料準備：** 對 \`USArrests\` 資料集進行標準化，以避免不同單位變數的影響。
-2.  **計算距離矩陣：** 使用 \`dist()\` 函數，計算樣本間的歐幾里得距離。
-3.  **執行階層式分群：** 使用 \`hclust()\` 函數，並採用 "complete" linkage method 來進行分群。
-4.  **視覺化樹狀圖：** 使用 \`plot()\` 函數將 \`hclust\` 的結果繪製成樹狀圖 (Dendrogram)。
-5.  **解讀與切割：** 在圖上使用 \`rect.hclust()\` 函數，根據視覺判斷，將樹狀圖切割成 3 個群組並用方框標示出來。
+請提供一段 R 程式碼，完成以下 HMM 分析流程：
+1.  **載入套件與建立範例資料：** 建立一個模擬的生態觀測資料框。
+2.  **定義與擬合 HMM 模型：**
+    -   使用 \`depmix()\` 函數定義一個具有兩個潛在狀態 (nstates = 2) 的 HMM。
+    -   模型應包含兩個觀測變數 ('flow' 和 'rain')。
+    -   使用 \`fit()\` 函數來擬合模型。
+3.  **檢視模型結果：** 使用 \`summary()\` 函數查看模型的參數估計，包括轉換矩陣和每個狀態下的觀測分佈。
+4.  **狀態解碼 (Viterbi 演算法)：** 使用 \`viterbi()\` 函數找出最可能的潛在狀態序列。
+5.  **視覺化結果：** 將觀測數據與推斷出的潛在狀態序列繪製在同一張圖上，以利解讀。
 
 # 程式碼與結果要求
-- 程式碼需有清晰的中文註解，解釋從距離計算到分群與視覺化的完整流程。
-- 樹狀圖應有清楚的標籤與標題。`
+- 請載入 \`depmixS4\` 套件。
+- 程式碼需有清晰的中文註解，解釋如何設定 HMM 模型以及如何解讀結果。`
   },
   {
     id: 88,
-    title: '使用 depmixS4 建立高斯混合模型 (GMM)',
+    title: '潛在類別分析 (LCA) 於問卷數據分群',
     difficulty: '3. 進階應用',
     category: '非監督式學習',
-    uses: 480,
-    likes: 210,
-    description: '對單變量連續數據擬合高斯混合模型，以識別潛在的子群體，並使用 AIC/BIC 選擇最佳組分數。',
-    tags: ['R 語言', '混合模型', 'GMM', 'depmixS4', '非監督式學習', 'AIC', 'BIC'],
-    isFavorite: true,
+    uses: 130,
+    likes: 95,
+    description: '使用 `poLCA` 套件對多分類的問卷反應數據進行潛在類別分析，以識別出具有不同反應模式的受訪者子群體。',
+    tags: ['R 語言', '潛在類別分析', 'LCA', 'poLCA', '市場區隔', '問卷分析'],
+    isFavorite: false,
     essentialRank: null,
-    usageContext: '當您懷疑您的數據是由多個不同的常態分佈群體混合而成時（例如，快速反應者與慢速反應者、兩種不同的疾病亞型），GMM 能幫助您識別並量化這些潛在的子群體。',
-    usageInstructions: '請將 `speed1$RT` 替換成您的**數值向量**。您可以修改迴圈中的 `nstates` 範圍，以測試不同數量的潛在群體。',
-    fullPrompt: `我正在分析一組反應時間 (RT) 數據，數據分佈呈現多峰性，我懷疑這是由多種不同的反應策略（例如，快猜與慢思）混合而成。
+    usageContext: '相較於 K-Means 等基於距離的分群方法，LCA 專門處理類別型數據（如問卷中的李克特量表），它假設存在幾個潛在的、無法直接觀測的類別，而每個類別中的個體有相似的反應模式。常用於市場區隔、社會學分群等。',
+    usageInstructions: '請安裝 `poLCA` 套件。您的輸入資料框中所有要分析的變數都必須是**從 1 開始的整數**。此指令將演示如何擬合多個模型（不同類別數）並使用 BIC 來選擇最佳模型。',
+    fullPrompt: `我正在分析一份市場調查問卷，希望根據受訪者的回答模式，將他們分為幾個不同的消費者群體。
 
 # 我的背景資訊
-- **研究目的：** 使用高斯混合模型 (Gaussian Mixture Model) 來識別潛在的反應策略群體，並確定最佳的群體數量。
-- **資料集：** 使用 \`hmmr\` 套件中的 \`speed1\` 資料集，其中的 \`RT\` 變數。
+- **研究目的：** 使用潛在類別分析 (LCA) 來對問卷數據進行市場區隔。
+- **資料集：** 一份名為 \`survey_data\` 的資料框，其中包含多個多分類的問卷題目（例如，對產品A, B, C 的偏好程度，1=不喜歡, 2=普通, 3=喜歡）。
+- **分析工具：** 我希望使用 R 語言的 \`poLCA\` 套件。
 
 # 我的任務
-請提供 R 程式碼，使用 \`depmixS4\` 套件完成以下分析：
-1.  **模型擬合：** 分別擬合 1 到 4 個成分 (components) 的高斯混合模型。
-2.  **模型比較：** 計算每個模型的 AIC 和 BIC，以找出最適當的模型。
-3.  **結果摘要：** 顯示最佳模型的參數估計（各群體的平均值、標準差與比例）。`
+請提供 R 程式碼，演示一個完整的 LCA 分析流程：
+1.  **資料準備：** \`poLCA\` 要求所有輸入變數都是整數，且從 1 開始。請演示如何將原始數據（可能包含0或非整數）轉換為符合要求的格式。
+2.  **定義模型公式：** 建立一個 \`cbind()\` 的公式，將所有問卷題目作為應變數。
+3.  **模型選擇 (尋找最佳類別數)：**
+    -   撰寫一個迴圈，擬合不同類別數 (例如 2 到 5 個類別) 的 LCA 模型。
+    -   從每個模型中提取 BIC (貝氏資訊量準則) 值。
+    -   找出 BIC 值最小的模型，作為最佳模型。
+4.  **檢視與解讀最佳模型：**
+    -   印出最佳模型的摘要。
+    -   解讀每個潛在類別的條件反應機率 (conditional item response probabilities)，以理解並命名每個消費者群體的特徵。
+5.  **視覺化結果：** 將條件反應機率繪製成長條圖，以更直觀地比較各類別的差異。
+
+# 程式碼與結果要求
+- 請載入 \`poLCA\` 套件。
+- 程式碼需有清晰的中文註解。`
+  },
+  {
+    id: 89,
+    title: '變點分析 (Change Point) 偵測時間序列結構轉變',
+    difficulty: '3. 進階應用',
+    category: '時間序列分析',
+    uses: 150,
+    likes: 110,
+    description: '使用 `changepoint` 套件來偵測時間序列數據中的結構性轉變點，例如平均值或變異數的突然改變。',
+    tags: ['R 語言', '變點分析', 'changepoint', '時間序列', '結構轉變'],
+    isFavorite: false,
+    essentialRank: null,
+    usageContext: '在分析長期數據時，我們常假設數據的統計特性是穩定的。變點分析可以幫助我們檢驗這個假設，並找出數據生成過程發生根本性改變的時間點。這在金融（市場制度改變）、氣候學（氣候突變）和品質管制等領域非常重要。',
+    usageInstructions: '請安裝 `changepoint` 套件。將您的時間序列數據傳入 `cpt.mean()` (偵測平均值變點) 或 `cpt.var()` (偵測變異數變點)。`method` 參數有多種選擇，`"PELT"` 是一種計算效率很高的精確算法。',
+    fullPrompt: `我正在分析一段長期的金融或環境時間序列數據，想知道這段時間內是否發生過結構性的突變。
+
+# 我的背景資訊
+- **研究目的：** 偵測一段時間序列數據中，平均值 (mean) 或變異數 (variance) 發生顯著變化的時間點。
+- **資料集：** R 內建的 \`Nile\` 河流量數據，記錄了 1871 年至 1970 年的年流量。
+- **分析工具：** 我希望使用 R 語言的 \`changepoint\` 套件。
+
+# 我的任務
+請提供 R 程式碼，完成以下變點分析任務：
+1.  **偵測平均值的變點：**
+    -   使用 \`cpt.mean()\` 函數，並設定 \`method="PELT"\` (一種高效的精確搜索算法)，來偵測平均值的單一或多個變點。
+    -   印出偵測到的變點位置。
+2.  **偵測變異數的變點：**
+    -   (選做) 使用 \`cpt.var()\` 函數來偵測變異數的變點。
+3.  **視覺化結果：**
+    -   使用 \`plot()\` 函數將時間序列與偵測到的變點一同繪製出來。
+    -   圖中應清楚標示出變點前後的平均值線段。
+
+# 程式碼與結果要求
+- 請載入 \`changepoint\` 套件。
+- 程式碼需有清晰的中文註解，解釋如何執行分析以及如何解讀圖表。`
+  },
+  {
+    id: 90,
+    title: '線性混合效應模型 (Mixed-Effects Model)',
+    difficulty: '3. 進階應用',
+    category: '進階統計模型',
+    uses: 180,
+    likes: 140,
+    description: '使用 `lme4` 套件擬合線性混合效應模型，以分析具有重複測量或分層結構的數據（如縱貫型研究），同時考慮固定效應與隨機效應。',
+    tags: ['R 語言', '混合模型', 'lme4', 'lmer', '縱貫型數據', '重複測量'],
+    isFavorite: false,
+    essentialRank: null,
+    usageContext: '在臨床試驗或心理學研究中，我們經常對同一個體進行多次重複測量。這些來自同一個體的數據點並非相互獨立，違反了傳統迴歸的假設。混合模型透過引入「隨機效應」來捕捉這種個體間的差異，從而得到更準確的群體趨勢（固定效應）估計。',
+    usageInstructions: '請安裝 `lme4` 套件。在 `lmer()` 的公式中，固定效應的寫法與 `lm()` 相同。隨機效應則寫在 `( | )` 中，例如 `(1 | subject)` 代表為每個 `subject` 擬合一個隨機截距，`(Days | Subject)` 則代表同時擬合隨機截距和隨機斜率。',
+    fullPrompt: `我正在分析一項縱貫型研究 (longitudinal study) 的數據，其中每個受試者在多個時間點都有重複測量值。
+
+# 我的背景資訊
+- **研究目的：** 分析睡眠剝奪天數對反應時間的影響，同時考慮到每個受試者有其獨特的基準反應時間與疲勞累積速度。
+- **資料集：** 使用 \`lme4\` 套件內建的 \`sleepstudy\` 資料集。
+- **模型假設：** 每個受試者 (\`Subject\`) 有自己的基線反應時間（隨機截距）和因睡眠剝奪天數 (\`Days\`) 增加而導致的反應時間變化率（隨機斜率）。
+
+# 我的任務
+請提供 R 程式碼，使用 \`lme4\` 套件擬合一個線性混合效應模型。
+
+# 程式碼與結果要求
+1.  **載入套件與資料：** 載入 \`lme4\` 套件並使用 \`sleepstudy\` 資料。
+2.  **擬合模型：** 使用 \`lmer()\` 函數，建立一個包含隨機截距和隨機斜率的模型。公式應為 \`Reaction ~ Days + (Days | Subject)\`。
+3.  **檢視模型摘要：** 使用 \`summary()\` 函數顯示模型結果。
+4.  **解讀結果：** 在註解中簡要說明如何解讀以下幾個關鍵部分：
+    -   **固定效應 (Fixed effects)：** 解釋 \`Days\` 的係數，代表群體的平均趨勢。
+    -   **隨機效應 (Random effects)：** 解釋 \`Subject\` 的變異數，代表個體間在截距和斜率上的差異。
+    -   **組內相關性 (Intra-class Correlation, ICC)。**
+
+# 程式碼範例
+\`\`\`R
+# 載入 lme4 套件
+# 如果尚未安裝，請執行 install.packages("lme4")
+library(lme4)
+library(ggplot2) # 為了視覺化
+
+# 1. 載入 sleepstudy 資料集
+data(sleepstudy)
+head(sleepstudy)
+
+# 2. 擬合線性混合效應模型
+# Reaction ~ Days: 固定效應，反應時間受天數影響的群體平均趨勢
+# (Days | Subject): 隨機效應，允許每個受試者 (Subject) 有自己的截距和斜率
+lmer_model <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+
+# 3. 檢視模型摘要
+summary(lmer_model)
+
+# 4. 解讀結果
+# - Fixed effects (固定效應):
+#   - (Intercept) 的估計值是群體的平均基線反應時間。
+#   - Days 的估計值 (約 10.47) 代表睡眠每增加一天，反應時間平均增加約 10.47 毫秒。p-value 顯著，表示此趨勢在統計上是重要的。
+#
+# - Random effects (隨機效應):
+#   - 顯示了截距和斜率在不同受試者之間的變異數 (Variance) 和相關性 (Corr)。
+#   - (Intercept) 的標準差 (Std.Dev.) 約 24.74，代表受試者間的基線反應時間差異很大。
+#   - Days 的標準差 (Std.Dev.) 約 5.92，代表受試者間因睡眠剝奪造成的反應時間變化率也有顯著差異。
+#
+# - 視覺化 (選做)
+#   繪製每個受試者的反應時間趨勢
+ggplot(sleepstudy, aes(x = Days, y = Reaction, group = Subject)) +
+  geom_point(aes(color = Subject), size = 2) +
+  geom_line(aes(color = Subject), alpha = 0.5) +
+  geom_line(aes(y = predict(lmer_model, re.form = NA)), size = 1.5, color = "black") + # 群體平均趨勢
+  labs(
+    title = "睡眠剝奪對反應時間的影響",
+    subtitle = "細線為個體趨勢，粗黑線為群體平均固定效應",
+    x = "睡眠剝奪天數",
+    y = "反應時間 (毫秒)"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none") # 隱藏圖例以保持清晰
+\`\`\`
+`
   }
 ];
