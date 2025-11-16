@@ -1,7 +1,7 @@
 <div align="center">
 </div>
 
-# 臨床提示 R 語言庫 (R Clinical Prompt Library)
+# R 語言臨床提示庫 (R Clinical Prompt Library)
 
 歡迎來到 `r-clinical-prompt-library`！🏥✨
 
