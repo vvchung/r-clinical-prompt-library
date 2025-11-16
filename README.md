@@ -33,6 +33,3 @@
 3.  **啟動 App**：
     輸入 `npm run dev`，然後就可以在瀏覽器中看到您的心血結晶囉！🎉
     
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
