@@ -1,0 +1,5 @@
+{
+  "name": "臨床統計 AI 指令庫",
+  "description": "一個專為臨床統計與 R 語言數據分析設計的 AI 指令庫，旨在強化從資料清理到進階模型建立與視覺化的研究工作流程。",
+  "requestFramePermissions": []
+}
